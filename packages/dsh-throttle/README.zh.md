@@ -1,7 +1,8 @@
 # dsh-throttle
 
-> DeepSeek Harness 限流插件 — 为 Harness 生态提供速率限制的 API 代理，复用 429-throttle-mcp 核心逻辑。
+[English](README.en.md) | 中文
 
+> DeepSeek Harness 限流插件 — 为 Harness 生态提供速率限制的 API 代理，复用 429-throttle-mcp 核心逻辑。
 
 ---
 

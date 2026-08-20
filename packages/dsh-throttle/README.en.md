@@ -1,5 +1,7 @@
 # dsh-throttle — English
 
+[中文](README.md) | English
+
 > DeepSeek Harness rate-limiting plugin — provides rate-limited API proxying for the Harness ecosystem, sharing core logic with 429-throttle-mcp.
 
 ---

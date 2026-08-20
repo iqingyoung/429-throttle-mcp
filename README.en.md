@@ -1,5 +1,7 @@
 # 429-throttle-mcp — English
 
+[中文](README.md) | English
+
 > Stop getting rejected with HTTP 429 — a rate-limited MCP proxy that lets models automatically control call pacing during long-running tasks.
 
 ---
