@@ -12,7 +12,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
-import { RateLimiter, estimateTokens } from "../../rate-limiter.js";
+import { RateLimiter, estimateTokens } from "./rate-limiter.js";
 
 // ============================================================
 // 配置

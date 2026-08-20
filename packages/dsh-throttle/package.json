@@ -7,9 +7,7 @@
   "scripts": {
     "start": "node plugin.js"
   },
-  "dependencies": {
-    "../rate-limiter.js": "file:../rate-limiter.js"
-  },
+  "dependencies": {},
   "dsh": {
     "manifest": "../dsh-manifest.json",
     "prefix": "dsh-throttle"

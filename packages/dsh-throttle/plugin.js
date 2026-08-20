@@ -8,7 +8,7 @@
  * 工具注册：通过 dsh-manifest.json 声明
  */
 
-import { RateLimiter, estimateTokens } from "../rate-limiter.js";
+import { RateLimiter, estimateTokens } from "./rate-limiter.js";
 import { readFileSync, existsSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
