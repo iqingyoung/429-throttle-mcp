@@ -1,0 +1,26 @@
+{
+  "name": "429-throttle-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo: 429-throttle-mcp (MCP Server) + dsh-throttle (DeepSeek Harness Plugin)",
+  "workspaces": [
+    "packages/429-throttle-mcp",
+    "packages/dsh-throttle"
+  ],
+  "scripts": {
+    "start:mcp": "node packages/429-throttle-mcp/server.js",
+    "start:dsh": "node packages/dsh-throttle/plugin.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "dsh",
+    "deepseek-harness",
+    "rate-limit",
+    "429",
+    "throttle"
+  ]
+}

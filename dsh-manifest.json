@@ -1,0 +1,16 @@
+{
+  "name": "dsh-throttle",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness 限流插件 — 自动控制 API 调用速率，避免 429 错误",
+  "prefix": "dsh-throttle",
+  "entry": "packages/dsh-throttle/plugin.js",
+  "rateLimit": {
+    "maxCalls": 30,
+    "maxTokens": 750000
+  },
+  "tools": [
+    "call_api",
+    "get_rate_limit_status",
+    "set_rate_limit"
+  ]
+}
