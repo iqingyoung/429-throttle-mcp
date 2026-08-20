@@ -1,15 +1,12 @@
 # 429-throttle-mcp
 
-| | |
-|---|---|
-| **中文** | [README](./README.md) |
-| **English** | [README](./README.md) |
-
 > 不再被 API 429 拒绝 — 一个带速率限制的 MCP 代理，让模型在长程任务中自动控制调用节奏。
+
+**English below ↓**
 
 ---
 
-## 是什么 / What is it
+## 是什么
 
 很多免费大模型 API（Grok、Gemini、Dots 等）每分钟只能调用 30 次左右。模型在做长程任务（搜索 + 生成 PPT、批量调用工具）时，很容易超出限额被 429 拒绝。
 
@@ -23,56 +20,52 @@
 
 ---
 
-## 核心参数 / Core Parameters
+## 核心参数
 
-| 参数 / Parameter | 默认值 / Default | 说明 / Description |
-|---|---|---|
-| `MAX_CALLS` | 30 | 每分钟最大调用次数 / Max API calls per minute |
-| `MAX_TOKENS` | 750000 | 每分钟最大 Token 数（请求体 + 响应体）/ Max tokens per minute |
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `MAX_CALLS` | 30 | 每分钟最大调用次数 (RPM) |
+| `MAX_TOKENS` | 750000 | 每分钟最大 Token 数 (TPM)，含请求体和响应体 |
 
 ---
 
-## 暴露的工具 / Exposed Tools
+## 暴露的工具
 
 ### `call_api`
 
-通过限流代理发送 HTTP 请求。 / Send HTTP requests through the rate-limited proxy.
+通过限流代理发送 HTTP 请求。所有外部 API 调用必须经过此工具。
 
-| 参数 / Parameter | 类型 / Type | 必填 / Required | 说明 / Description |
-|---|---|---|---|
-| `url` | string | ✅ | 目标 API 的完整 URL / Full API URL |
-| `method` | string | ❌ | HTTP 方法，默认 GET / HTTP method, default GET |
-| `body` | string | ❌ | 请求体，JSON 字符串 / Request body as JSON string |
-| `headers` | string | ❌ | 自定义请求头，JSON 字符串 / Custom headers as JSON string |
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `url` | string | ✅ | 目标 API 的完整 URL |
+| `method` | string | ❌ | HTTP 方法，默认 GET |
+| `body` | string | ❌ | 请求体，JSON 字符串 |
+| `headers` | string | ❌ | 自定义请求头，JSON 字符串 |
 
-**返回**：API 响应 + `_meta.rateLimit` 用量快照。 / API response with rate limit usage snapshot.
-
-如果被限流拒绝，返回 `RATE_LIMIT_EXCEEDED` 错误，包含 `retryAfterSeconds` 建议等待时间。 / If rate limited, returns `RATE_LIMIT_EXCEEDED` with suggested wait time.
+返回：API 响应 + `_meta.rateLimit` 用量快照。如果被限流拒绝，返回 `RATE_LIMIT_EXCEEDED` 错误，包含 `retryAfterSeconds` 建议等待时间。
 
 ### `get_rate_limit_status`
 
-查询当前速率限制使用情况。返回已用/剩余调用次数和 Token 数。 / Query current rate limit usage. Returns used/remaining calls and tokens.
+查询当前速率限制使用情况。返回已用/剩余调用次数和 Token 数。不包含队列计数器，避免用户焦虑。
 
 ### `set_rate_limit`
 
-动态调整限流参数（对应滑块调节，实时生效无需重启）。 / Dynamically adjust rate limit parameters (real-time, no restart needed).
+动态调整限流参数（对应滑块调节，实时生效无需重启）。
 
-| 参数 / Parameter | 类型 / Type | 说明 / Description |
-|---|---|---|
-| `callsPerMinute` | number | 每分钟最大调用次数 / Max calls per minute |
-| `tokensPerMinute` | number | 每分钟最大 Token 数 / Max tokens per minute |
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `callsPerMinute` | number | 每分钟最大调用次数 (RPM) |
+| `tokensPerMinute` | number | 每分钟最大 Token 数 (TPM) |
 
 ---
 
-## 安装 / Installation
-
-### MCP 客户端（如 ZCode）
+## 安装
 
 ```bash
 npm install 429-throttle-mcp
 ```
 
-在 MCP 配置中添加： / Add to your MCP config:
+在 MCP 配置中添加：
 
 ```json
 {
@@ -91,35 +84,145 @@ npm install 429-throttle-mcp
 
 ---
 
-## 工作流示例 / Workflow Example
+## 工作流示例
 
-模型在做品牌 PPT 搜索任务时： / When a model works on a brand PPT search task:
+模型在做品牌 PPT 搜索任务时：
 
-1. 调用 `get_rate_limit_status` → 确认额度充足 / Check rate limit status
-2. 调用 `call_api` → 搜索品牌关键词 / Search brand keywords
-3. 如果被拒绝 → 等待 `retryAfterSeconds` 后重试 / If rejected, wait and retry
-4. 重复 2-3 直到收集完所有信息 / Repeat until all info collected
-5. 调用 `set_rate_limit` → 收紧限流参数用于生成阶段 / Tighten limits for generation phase
+1. 调用 `get_rate_limit_status` → 确认额度充足
+2. 调用 `call_api` → 搜索品牌关键词
+3. 如果被拒绝 → 等待 `retryAfterSeconds` 后重试
+4. 重复 2-3 直到收集完所有信息
+5. 调用 `set_rate_limit` → 收紧限流参数用于生成阶段
 
 ---
 
-## 限流算法 / Rate Limiting Algorithm
+## 限流算法
 
 **滑动窗口 + 令牌桶**（Sliding Window + Token Bucket）：维护 60 秒滑动窗口，每次调用记录时间戳和 token 消耗。窗口外的旧记录自动清理。超过限制时计算最早记录的剩余等待时间。
 
-**并发安全**：`tryConsume()` 是同步函数，在 Node.js 单线程事件循环中天然串行化，不会出现竞态条件。 / Concurrency-safe: `tryConsume()` is synchronous and atomic within Node.js's single-threaded event loop.
+**并发安全**：`tryConsume()` 是同步函数，在 Node.js 单线程事件循环中天然串行化，不会出现竞态条件。
 
 ---
 
-## Token 估算 / Token Estimation
+## SEO 关键词
 
-MVP 版本使用粗略估算：中文字符 × 1.5 + 英文单词 × 0.75。生产环境建议替换为对应模型的精确 tokenizer。 / MVP uses rough estimation: Chinese chars × 1.5 + English words × 0.75. Replace with a precise tokenizer for production.
+429报错, anti 429, MCP限流, 大模型每分钟调用限制, 免费大模型速率限制, Agent批量调用触发429, MCP排队调用, RPM, TPM, rate limiter mcp, quota guard, mcp server, mcp proxy, throttle, llm api quota, cop, HTTP 429, Too Many Requests, rate limiting, token bucket, sliding window, API proxy
 
 ---
 
-## 关键词 / Keywords
+## License
 
-429 报错, anti 429, MCP 限流, 大模型每分钟调用限制, 免费大模型速率限制, Agent 批量调用触发 429, MCP 排队调用, RPM, TPM, rate limiter mcp, quota guard, mcp server, mcp proxy, throttle, llm api quota, cop, HTTP 429, Too Many Requests, rate limiting, token bucket, sliding window, API proxy
+MIT
+
+---
+
+---
+
+# 429-throttle-mcp — English
+
+> Stop getting rejected with HTTP 429 — a rate-limited MCP proxy that lets models automatically control call pacing during long-running tasks.
+
+**中文在上面 ↑**
+
+---
+
+## What is it
+
+Many free LLM APIs (Grok, Gemini, Dots, etc.) only allow ~30 calls per minute. During long-running tasks, models easily hit the rate limit and get rejected with HTTP 429.
+
+`429-throttle-mcp` provides a **transparent rate-limiting layer**:
+
+```
+Model → call_api tool → Rate Limiter → Actual API Request → Response + Usage Snapshot
+```
+
+The model doesn't need to know about rate limits — it just calls `call_api` normally.
+
+---
+
+## Core Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `MAX_CALLS` | 30 | Max API calls per minute (RPM) |
+| `MAX_TOKENS` | 750000 | Max tokens per minute (TPM), request + response |
+
+---
+
+## Exposed Tools
+
+### `call_api`
+
+Send HTTP requests through the rate-limited proxy.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | ✅ | Full API URL |
+| `method` | string | ❌ | HTTP method, default GET |
+| `body` | string | ❌ | Request body as JSON string |
+| `headers` | string | ❌ | Custom headers as JSON string |
+
+If rate limited, returns `RATE_LIMIT_EXCEEDED` with `retryAfterSeconds`.
+
+### `get_rate_limit_status`
+
+Query current rate limit usage. Returns used/remaining calls and tokens. No queue counter.
+
+### `set_rate_limit`
+
+Dynamically adjust rate limit parameters (real-time, no restart).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `callsPerMinute` | number | Max calls per minute (RPM) |
+| `tokensPerMinute` | number | Max tokens per minute (TPM) |
+
+---
+
+## Installation
+
+```bash
+npm install 429-throttle-mcp
+```
+
+Add to MCP config:
+
+```json
+{
+  "mcpServers": {
+    "429-throttle-mcp": {
+      "command": "node",
+      "args": ["node_modules/429-throttle-mcp/server.js"],
+      "env": {
+        "MAX_CALLS": "30",
+        "MAX_TOKENS": "750000"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Workflow
+
+1. Call `get_rate_limit_status` → confirm quota
+2. Call `call_api` → search
+3. If rejected → wait `retryAfterSeconds` → retry
+4. Repeat until done
+5. Call `set_rate_limit` → tighten for generation
+
+---
+
+## Algorithm
+
+**Sliding Window + Token Bucket**: 60-second window, auto-prune old records. `tryConsume()` is synchronous and concurrency-safe within Node.js's event loop.
+
+---
+
+## SEO Keywords
+
+429, anti 429, MCP rate limit, RPM, TPM, rate limiter mcp, quota guard, mcp server, mcp proxy, throttle, llm api quota, HTTP 429, Too Many Requests, rate limiting, token bucket, sliding window, API proxy
 
 ---
 
