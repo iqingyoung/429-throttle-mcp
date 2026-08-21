@@ -1,8 +1,8 @@
 {
   "name": "429-throttle-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Monorepo: 429-throttle-mcp (MCP Server) + dsh-throttle (DeepSeek Harness Plugin)",
+  "description": "Monorepo: 429-throttle-mcp (MCP Server) + dsh-throttle (DeepSeek Harness Plugin) + rate-limit-operator 技能",
   "workspaces": [
     "packages/429-throttle-mcp",
     "packages/dsh-throttle"

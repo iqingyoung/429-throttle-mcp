@@ -28,8 +28,12 @@ class RateLimiter {
       totalCalls: 0,
       totalTokens: 0,
       rejectedCalls: 0,
+      totalDurationMs: 0,
       startTime: Date.now(),
     };
+    this.latencySamples = [];
+    this.tasks = new Map();
+    this._taskSeq = 0;
   }
 
   /**
@@ -91,6 +95,106 @@ class RateLimiter {
     if (this.tokenUsage.length === 0) return;
     this.tokenUsage[this.tokenUsage.length - 1] += tokens;
     this.stats.totalTokens += tokens;
+  }
+
+  /**
+   * 记录一次实际 API 调用的耗时（毫秒），用于统计实际吞吐与平均时延。
+   * @param {number} ms
+   */
+  recordDuration(ms) {
+    if (typeof ms === "number" && ms >= 0) {
+      this.stats.totalDurationMs += ms;
+      this.latencySamples.push(ms);
+      if (this.latencySamples.length > 50) this.latencySamples.shift();
+    }
+  }
+
+  /** 平均单次调用时延（毫秒），样本不足时返回 0 */
+  get avgLatencyMs() {
+    if (this.latencySamples.length === 0) return 0;
+    const sum = this.latencySamples.reduce((a, b) => a + b, 0);
+    return Math.round(sum / this.latencySamples.length);
+  }
+
+  /** 当前累计统计的浅拷贝，用于任务前后 diff */
+  _statsSnapshot() {
+    return {
+      totalCalls: this.stats.totalCalls,
+      totalTokens: this.stats.totalTokens,
+      rejectedCalls: this.stats.rejectedCalls,
+      totalDurationMs: this.stats.totalDurationMs,
+    };
+  }
+
+  /**
+   * 开启一个任务计时区间，返回 taskId 供 endTask 使用。
+   * @param {string} [name]
+   */
+  beginTask(name) {
+    this._taskSeq++;
+    const taskId = "task-" + this._taskSeq;
+    this.tasks.set(taskId, {
+      id: taskId,
+      name: name || "",
+      startedAt: Date.now(),
+      snap: this._statsSnapshot(),
+    });
+    return { taskId, startedAt: this.tasks.get(taskId).startedAt };
+  }
+
+  /**
+   * 结束任务计时区间，返回本次任务的复盘报告。
+   * @param {string} taskId
+   * @param {number} [concurrency] 假设每轮并发调用数（默认 1，即串行）
+   */
+  endTask(taskId, concurrency = 1) {
+    const task = this.tasks.get(taskId);
+    if (!task) return { error: "TASK_NOT_FOUND", taskId };
+    this.tasks.delete(taskId);
+
+    const end = this._statsSnapshot();
+    const start = task.snap;
+    const callsDelta = end.totalCalls - start.totalCalls;
+    const tokensDelta = end.totalTokens - start.totalTokens;
+    const rejectedDelta = end.rejectedCalls - start.rejectedCalls;
+    const apiTimeMs = end.totalDurationMs - start.totalDurationMs;
+    const wallClockMs = Date.now() - task.startedAt;
+
+    const avgLat = this.avgLatencyMs;
+    const estimatedSerialMs =
+      callsDelta > 0 && avgLat > 0 ? callsDelta * avgLat : 0;
+
+    let timeoutRound = null;
+    if (callsDelta > 0) {
+      const R = Math.max(1, concurrency);
+      const callsRound = Math.ceil(this.maxCalls / R);
+      const tokensPerRound = (tokensDelta / callsDelta) * R;
+      const tokensRound =
+        tokensPerRound > 0 ? Math.ceil(this.maxTokens / tokensPerRound) : Infinity;
+      timeoutRound = Math.min(callsRound, tokensRound);
+    }
+
+    return {
+      taskId,
+      name: task.name,
+      wallClockMs,
+      apiTimeMs,
+      calls: callsDelta,
+      tokens: tokensDelta,
+      rejectedCalls: rejectedDelta,
+      estimatedSerialDurationMs: estimatedSerialMs,
+      concurrency,
+      timeoutRound:
+        timeoutRound === null
+          ? "未基于此任务估算"
+          : Number.isFinite(timeoutRound)
+          ? timeoutRound
+          : "未达上限",
+      note:
+        rejectedDelta > 0
+          ? `本次有 ${rejectedDelta} 次被本代理限流（RATE_LIMIT_EXCEEDED），非上游 429。`
+          : "本任务未被本代理限流；若仍见 429，来自上游平台配额。",
+    };
   }
 
   /** 清理滑动窗口外的旧记录 */
@@ -162,6 +266,8 @@ class RateLimiter {
         totalCalls: this.stats.totalCalls,
         totalTokens: this.stats.totalTokens,
         rejectedCalls: this.stats.rejectedCalls,
+        totalDurationMs: this.stats.totalDurationMs,
+        avgLatencyMs: this.avgLatencyMs,
         uptime: Math.floor((Date.now() - this.stats.startTime) / 1000),
       },
       recommendation,
@@ -198,4 +304,4 @@ function estimateTokens(text) {
   return Math.ceil(chineseChars * 1.5 + otherWords * 0.75);
 }
 
-module.exports = { RateLimiter, estimateTokens };
+export { RateLimiter, estimateTokens };

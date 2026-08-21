@@ -1,7 +1,7 @@
 {
   "name": "dsh-throttle",
-  "version": "1.0.0",
-  "description": "DeepSeek Harness 限流插件 — 为 Harness 生态提供速率限制的 API 代理，复用 429-throttle-mcp 核心逻辑",
+  "version": "1.1.0",
+  "description": "DeepSeek Harness 限流插件：长程任务自动控速不再 429，支持任务复盘(begin_task/end_task)，复用 429-throttle-mcp 核心逻辑",
   "main": "plugin.js",
   "type": "module",
   "scripts": {

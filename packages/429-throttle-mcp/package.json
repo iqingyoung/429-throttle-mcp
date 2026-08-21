@@ -1,14 +1,15 @@
 {
   "name": "429-throttle-mcp",
-  "version": "1.0.0",
-  "description": "带速率限制的 MCP 代理 — 模型通过此 MCP 调用外部 API，自动控制每分钟调用次数和 Token 用量，不再被 429 拒绝",
+  "version": "1.1.0",
+  "description": "带速率限制的 MCP 代理：模型长程任务自动控速不再 429；配套 rate-limit-operator 技能，非技术用户一句话完成打开/调参/关闭/复盘",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
   },
   "engines": {
     "node": ">=18"
