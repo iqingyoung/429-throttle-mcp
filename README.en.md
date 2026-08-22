@@ -1,4 +1,5 @@
 # 429-throttle-mcp
+[![Downloads](https://img.shields.io/npm/dm/429-throttle-mcp)](https://npmjs.com/package/429-throttle-mcp)
 
 English | [中文](README.md)
 
