@@ -1,5 +1,6 @@
 # 429-throttle-mcp
 [![Downloads](https://img.shields.io/npm/dm/429-throttle-mcp)](https://npmjs.com/package/429-throttle-mcp)
+[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-en.svg)](https://dsh.market/)
 
 English | [中文](README.md)
 
