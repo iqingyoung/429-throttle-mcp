@@ -1,4 +1,4 @@
-# 429-throttle-mcp
+# dsh-throttle
 
 English | [中文](README.md)
 
