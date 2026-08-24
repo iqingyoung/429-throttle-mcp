@@ -11,6 +11,8 @@
   "tools": [
     "call_api",
     "get_rate_limit_status",
-    "set_rate_limit"
+    "set_rate_limit",
+    "begin_task",
+    "end_task"
   ]
 }
