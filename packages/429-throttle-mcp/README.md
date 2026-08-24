@@ -1,6 +1,6 @@
 # 429-throttle-mcp
 
-[English](README.en.md) | 中文
+[English](https://github.com/iqingyoung/429-throttle-mcp/blob/main/packages/429-throttle-mcp/README.en.md) | 中文
 
 > 不再被 API 429 拒绝 — 自带限流的 MCP 代理 + Agent 操作员技能。模型在长程任务中自动控速；非技术用户一句话完成「打开 / 调参 / 关闭 / 诊断 / 复盘」。
 
