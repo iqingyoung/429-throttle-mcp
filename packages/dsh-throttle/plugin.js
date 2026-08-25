@@ -63,10 +63,12 @@ export function apply(ctx) {
   ctx.tools.register(
     defineTool({
       name: "set_rate_limit",
-      description: "动态调整限流参数（实时生效，无需重启）。",
+      description:
+        "动态调整限流参数（实时生效，无需重启）。非正数会被拒绝；超过安全上限（120 次/分钟、200 万 token/分钟）时返回 needsConfirmation，需携带 confirm=true 再次调用确认。",
       parameters: {
         callsPerMinute: { type: "number", description: "每分钟最大调用次数 (RPM)" },
         tokensPerMinute: { type: "number", description: "每分钟最大 Token 数 (TPM)" },
+        confirm: { type: "boolean", description: "设置超大值时的二次确认标记" },
       },
       output: {
         schema: OUT_SCHEMA,

@@ -1,6 +1,6 @@
 {
   "name": "429-throttle-mcp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "带速率限制的 MCP 代理：模型长程任务自动控速不再 429；配套 rate-limit-operator 技能，非技术用户一句话完成打开/调参/关闭/复盘",
   "main": "server.js",
   "type": "module",
@@ -8,7 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.16.0",
     "zod": "^3.23.0"
   },
   "engines": {
