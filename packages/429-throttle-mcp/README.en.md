@@ -1,6 +1,6 @@
 # 429-throttle-mcp
 
-English | [中文](README.md)
+English | [中文](https://github.com/iqingyoung/429-throttle-mcp/blob/main/packages/429-throttle-mcp/README.md)
 
 > Stop getting rejected with HTTP 429 — a rate-limited MCP proxy plus an Agent operator skill. Models pace themselves automatically during long-running tasks; non-technical users open / tune / disable / diagnose / review with plain sentences.
 

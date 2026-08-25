@@ -4,6 +4,14 @@
   "description": "带速率限制的 MCP 代理：模型长程任务自动控速不再 429；配套 rate-limit-operator 技能，非技术用户一句话完成打开/调参/关闭/复盘",
   "main": "server.js",
   "type": "module",
+  "mcpName": "io.github.iqingyoung/429-throttle-mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iqingyoung/429-throttle-mcp.git"
+  },
+  "bin": {
+    "429-throttle-mcp": "./server.js"
+  },
   "scripts": {
     "start": "node server.js"
   },
