@@ -1,6 +1,6 @@
 {
   "name": "dsh-throttle",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "DeepSeek Harness 限流插件：长程任务自动控速不再 429，支持任务复盘(begin_task/end_task)，复用 429-throttle-mcp 核心逻辑",
   "main": "plugin.js",
   "type": "module",
