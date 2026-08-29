@@ -1,0 +1,6 @@
+# dsh-throttle bundle patch: inserts the host plugin row into the profile roster.
+# Install with:
+#   dsh plugin --profile web add dsh-throttle
+- insert:
+    - id: dsh-throttle
+      name: dsh-throttle
