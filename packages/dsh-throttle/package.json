@@ -10,7 +10,10 @@
   "dependencies": {},
   "dsh": {
     "manifest": "../dsh-manifest.json",
-    "prefix": "dsh-throttle"
+    "prefix": "dsh-throttle",
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   },
   "keywords": [
     "dsh",
